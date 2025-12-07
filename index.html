@@ -9,7 +9,7 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background: #f2f2f7;
       padding: 16px;
-      max-width: 700px;
+      max-width: 720px;
       margin: 0 auto;
     }
     h1 {
@@ -20,13 +20,13 @@
       text-align: center;
       font-size: 14px;
       color: #666;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
     }
     .row {
       display: flex;
       gap: 8px;
-      margin-bottom: 8px;
       flex-wrap: wrap;
+      margin-bottom: 8px;
     }
     .btn-tab, .btn-level {
       flex: 1;
@@ -91,9 +91,14 @@
       color: #007aff;
       border: 1px solid #007aff;
     }
-    .danger {
-      background: #ff3b30;
-      color: #fff;
+    .secondary-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+    .secondary-row button {
+      flex: 1;
     }
     .feedback {
       margin-top: 8px;
@@ -116,11 +121,17 @@
       font-size: 12px;
       color: #666;
     }
+    .hint-note {
+      margin-top: 8px;
+      font-size: 12px;
+      color: #666;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
   <h1>French Trainer</h1>
-  <p class="subtitle">Beginner words, levels, and phrases – practice ~1 hour a day.</p>
+  <p class="subtitle">Words, numbers & phrases – speak or type your answers.</p>
 
   <!-- Mode: Words vs Phrases -->
   <div class="row">
@@ -133,6 +144,11 @@
     <button id="level-b1" class="btn-level active" type="button">Beginner 1</button>
     <button id="level-b2" class="btn-level" type="button">Beginner 2</button>
     <button id="level-b3" class="btn-level" type="button">Beginner 3</button>
+    <button id="level-num" class="btn-level" type="button">Numbers & Time</button>
+  </div>
+
+  <div class="row">
+    <button id="btn-hard" class="btn-level" type="button">Train hard stuff</button>
   </div>
 
   <div class="card">
@@ -140,22 +156,33 @@
     <div class="big" id="english-text">Loading…</div>
     <p class="small" id="hint-text"></p>
 
-    <input id="text-answer" placeholder="(Optional) Type the French here if you want">
+    <input id="text-answer" placeholder="You can type the French here (optional)">
 
     <button class="action primary" id="btn-check" type="button">Check (typing)</button>
-    <button class="action ghost" id="btn-hear-fr" type="button">🔊 Hear French</button>
-    <button class="action ghost" id="btn-speak" type="button">🎙 Speak answer</button>
-    <button class="action ghost" id="btn-show" type="button">Show answer</button>
-    <button class="action ghost" id="btn-next" type="button">Next ➜</button>
+
+    <div class="secondary-row">
+      <button class="action ghost" id="btn-hear-fr" type="button">🔊 Hear French</button>
+      <button class="action ghost" id="btn-speak" type="button">🎙 Speak answer</button>
+    </div>
+
+    <div class="secondary-row">
+      <button class="action ghost" id="btn-show" type="button">Show answer</button>
+      <button class="action ghost" id="btn-next" type="button">Next ➜</button>
+    </div>
 
     <div class="feedback" id="feedback"></div>
     <div class="stats" id="stats"></div>
     <div class="mic-status" id="mic-status"></div>
   </div>
 
+  <p class="hint-note">
+    Daily plan idea (1 hour): 15 min Beginner 1 → 15 min Beginner 2 → 15 min Beginner 3 → 15 min Phrases / Hard stuff.
+  </p>
+
   <script>
     // ---------- DATA ----------
     const wordLevels = {
+      // Core survival words
       beginner1: [
         { en: "hello", fr: "bonjour" },
         { en: "goodbye", fr: "au revoir" },
@@ -173,58 +200,121 @@
         { en: "tomorrow", fr: "demain" },
         { en: "yesterday", fr: "hier" }
       ],
+
+      // People, places, everyday things
       beginner2: [
+        { en: "man", fr: "un homme" },
+        { en: "woman", fr: "une femme" },
+        { en: "child", fr: "un enfant" },
+        { en: "friend (m.)", fr: "un ami" },
+        { en: "friend (f.)", fr: "une amie" },
+        { en: "family", fr: "la famille" },
+        { en: "house / home", fr: "la maison" },
+        { en: "room", fr: "la chambre" },
+        { en: "street", fr: "la rue" },
+        { en: "city", fr: "la ville" },
+        { en: "school", fr: "l'école" },
+        { en: "work / job", fr: "le travail" },
+        { en: "shop / store", fr: "le magasin" },
+        { en: "restaurant", fr: "le restaurant" },
+        { en: "car", fr: "la voiture" },
+        { en: "bus", fr: "le bus" },
+        { en: "train", fr: "le train" },
+        { en: "airport", fr: "l'aéroport" }
+      ],
+
+      // Food + feelings + key verbs
+      beginner3: [
         { en: "water", fr: "l'eau" },
         { en: "bread", fr: "le pain" },
         { en: "coffee", fr: "le café" },
         { en: "tea", fr: "le thé" },
         { en: "milk", fr: "le lait" },
-        { en: "house", fr: "la maison" },
-        { en: "car", fr: "la voiture" },
-        { en: "street", fr: "la rue" },
-        { en: "friend (m.)", fr: "un ami" },
-        { en: "friend (f.)", fr: "une amie" },
-        { en: "man", fr: "un homme" },
-        { en: "woman", fr: "une femme" },
-        { en: "child", fr: "un enfant" },
-        { en: "school", fr: "l'école" },
-        { en: "work", fr: "le travail" }
-      ],
-      beginner3: [
+        { en: "rice", fr: "le riz" },
+        { en: "chicken", fr: "le poulet" },
+        { en: "fruit", fr: "le fruit" },
+        { en: "vegetables", fr: "les légumes" },
+
         { en: "I am", fr: "je suis" },
         { en: "you are (informal)", fr: "tu es" },
-        { en: "he is", fr: "il est" },
-        { en: "she is", fr: "elle est" },
         { en: "we are", fr: "nous sommes" },
         { en: "I have", fr: "j'ai" },
         { en: "you have (informal)", fr: "tu as" },
         { en: "I want", fr: "je veux" },
         { en: "I would like", fr: "je voudrais" },
         { en: "I speak", fr: "je parle" },
-        { en: "I don’t know", fr: "je ne sais pas" },
+        { en: "I don't know", fr: "je ne sais pas" },
+        { en: "I understand", fr: "je comprends" },
         { en: "I am tired", fr: "je suis fatigué" },
         { en: "I am hungry", fr: "j'ai faim" },
-        { en: "I am thirsty", fr: "j'ai soif" },
-        { en: "I understand", fr: "je comprends" }
+        { en: "I am thirsty", fr: "j'ai soif" }
+      ],
+
+      // Numbers and time basics
+      numbers: [
+        { en: "zero", fr: "zéro" },
+        { en: "one", fr: "un" },
+        { en: "two", fr: "deux" },
+        { en: "three", fr: "trois" },
+        { en: "four", fr: "quatre" },
+        { en: "five", fr: "cinq" },
+        { en: "six", fr: "six" },
+        { en: "seven", fr: "sept" },
+        { en: "eight", fr: "huit" },
+        { en: "nine", fr: "neuf" },
+        { en: "ten", fr: "dix" },
+        { en: "eleven", fr: "onze" },
+        { en: "twelve", fr: "douze" },
+        { en: "thirteen", fr: "treize" },
+        { en: "fourteen", fr: "quatorze" },
+        { en: "fifteen", fr: "quinze" },
+        { en: "twenty", fr: "vingt" },
+        { en: "thirty", fr: "trente" },
+        { en: "forty", fr: "quarante" },
+        { en: "fifty", fr: "cinquante" },
+
+        { en: "morning", fr: "le matin" },
+        { en: "afternoon", fr: "l'après-midi" },
+        { en: "evening", fr: "le soir" },
+        { en: "night", fr: "la nuit" },
+        { en: "today", fr: "aujourd'hui" },
+        { en: "tomorrow", fr: "demain" },
+        { en: "yesterday", fr: "hier" },
+        { en: "now", fr: "maintenant" },
+        { en: "later", fr: "plus tard" },
+        { en: "always", fr: "toujours" },
+        { en: "never", fr: "jamais" }
       ]
     };
 
+    // Phrases – daily life + travel + learning
     const phraseList = [
       { en: "Where is the bathroom?", fr: "Où sont les toilettes ?" },
       { en: "I don't understand.", fr: "Je ne comprends pas." },
       { en: "Do you speak English?", fr: "Parlez-vous anglais ?" },
+      { en: "I speak a little French.", fr: "Je parle un peu français." },
+      { en: "I am learning French.", fr: "J'apprends le français." },
+      { en: "Could you repeat, please?", fr: "Pouvez-vous répéter, s'il vous plaît ?" },
       { en: "I would like some water, please.", fr: "Je voudrais de l'eau, s'il vous plaît." },
       { en: "How much is this?", fr: "C'est combien ?" },
       { en: "Can you help me?", fr: "Pouvez-vous m'aider ?" },
       { en: "I am lost.", fr: "Je suis perdu." },
-      { en: "What time is it?", fr: "Il est quelle heure ?" },
+      { en: "I feel sick.", fr: "Je me sens mal." },
+      { en: "Call an ambulance!", fr: "Appelez une ambulance !" },
+      { en: "Where is the train station?", fr: "Où est la gare ?" },
+      { en: "Where is the bus stop?", fr: "Où est l'arrêt de bus ?" },
+      { en: "I am looking for this address.", fr: "Je cherche cette adresse." },
       { en: "Nice to meet you.", fr: "Enchanté." },
       { en: "Good morning.", fr: "Bonjour." },
       { en: "Good evening.", fr: "Bonsoir." },
       { en: "Good night.", fr: "Bonne nuit." },
       { en: "See you later.", fr: "À plus tard." },
-      { en: "Where is the train station?", fr: "Où est la gare ?" },
-      { en: "I am learning French.", fr: "J'apprends le français." }
+      { en: "What time is it?", fr: "Il est quelle heure ?" },
+      { en: "I'm just looking, thank you.", fr: "Je regarde seulement, merci." },
+      { en: "The bill, please.", fr: "L'addition, s'il vous plaît." },
+      { en: "Can I pay by card?", fr: "Je peux payer par carte ?" },
+      { en: "I am from the United States.", fr: "Je viens des États-Unis." },
+      { en: "I like this city.", fr: "J'aime cette ville." }
     ];
 
     // ---------- STATE ----------
@@ -234,6 +324,9 @@
     let index = 0;
     let correctCount = 0;
     let totalCount = 0;
+
+    // Per-item stats (session only): key -> {correct, total}
+    const itemStats = {};
 
     // ---------- HELPERS ----------
     function shuffle(array) {
@@ -253,8 +346,27 @@
         .trim();
     }
 
+    function itemKey(item) {
+      return `${mode}:${item.fr}`;
+    }
+
     function currentItem() {
       return pool[index];
+    }
+
+    function updateItemStats(item, isCorrect) {
+      const key = itemKey(item);
+      if (!itemStats[key]) {
+        itemStats[key] = { correct: 0, total: 0 };
+      }
+      itemStats[key].total++;
+      if (isCorrect) itemStats[key].correct++;
+    }
+
+    function getAccuracy(item) {
+      const s = itemStats[itemKey(item)];
+      if (!s || s.total === 0) return 0; // treat unseen as "needs work"
+      return s.correct / s.total;
     }
 
     // ---------- UI ELEMENTS ----------
@@ -264,6 +376,9 @@
     const levelB1 = document.getElementById("level-b1");
     const levelB2 = document.getElementById("level-b2");
     const levelB3 = document.getElementById("level-b3");
+    const levelNum = document.getElementById("level-num");
+
+    const btnHard = document.getElementById("btn-hard");
 
     const englishText = document.getElementById("english-text");
     const hintText = document.getElementById("hint-text");
@@ -298,8 +413,8 @@
       const item = currentItem();
       englishText.textContent = item.en;
       hintText.textContent = mode === "words"
-        ? "Speak the French word. Example: “bonjour”"
-        : "Speak the full French phrase. Example: “Où sont les toilettes ?”";
+        ? "Speak the French word. Listen first with 🔊, then repeat."
+        : "Speak the full French phrase. Copy the rhythm and sounds.";
       textAnswer.value = "";
       feedbackEl.textContent = "";
       feedbackEl.className = "feedback";
@@ -308,10 +423,10 @@
 
     function updateStats() {
       if (totalCount === 0) {
-        statsEl.textContent = "No answers yet. Take your time and repeat each word out loud.";
+        statsEl.textContent = "No answers yet. Repeat each item out loud a few times.";
       } else {
         const pct = ((correctCount / totalCount) * 100).toFixed(0);
-        statsEl.textContent = `Correct: ${correctCount}/${totalCount} (${pct}%)`;
+        statsEl.textContent = `Correct this session: ${correctCount}/${totalCount} (${pct}%)`;
       }
     }
 
@@ -334,13 +449,16 @@
       const correct = simplify(item.fr);
 
       if (!user) {
-        feedbackEl.textContent = "Type something first 🙂 (or use the mic if available)";
+        feedbackEl.textContent = "Type something first 🙂 (or use 🎙 if your browser supports it)";
         feedbackEl.className = "feedback";
         return;
       }
 
       totalCount++;
-      if (user === correct) {
+      const isCorrect = user === correct;
+      updateItemStats(item, isCorrect);
+
+      if (isCorrect) {
         correctCount++;
         feedbackEl.textContent = `✅ Correct! “${item.fr}”`;
         feedbackEl.className = "feedback correct";
@@ -355,10 +473,34 @@
     function nextItem() {
       index++;
       if (index >= pool.length) {
-        pool = shuffle(pool); // reshuffle same list
+        pool = shuffle(pool);
         index = 0;
       }
       loadItem();
+    }
+
+    // ---------- HARD STUFF TRAINER ----------
+    function trainHardStuff() {
+      const source = mode === "words"
+        ? Object.values(wordLevels).flat()
+        : phraseList.slice();
+
+      // Words with accuracy < 70% OR never answered
+      const hard = source.filter(item => getAccuracy(item) < 0.7);
+
+      if (hard.length === 0) {
+        feedbackEl.textContent = "🔥 Nothing especially hard yet. Keep practicing and this will fill up.";
+        feedbackEl.className = "feedback";
+        return;
+      }
+
+      pool = shuffle(hard);
+      index = 0;
+      correctCount = 0;
+      totalCount = 0;
+      loadItem();
+      feedbackEl.textContent = "Training hard stuff only. These are the ones your brain needs most.";
+      feedbackEl.className = "feedback";
     }
 
     // ---------- SPEECH RECOGNITION ----------
@@ -389,10 +531,10 @@
           handleSpokenAnswer(transcript);
         };
 
-        micStatusEl.textContent = "Mic ready. Tap “🎙 Speak answer” and talk.";
+        micStatusEl.textContent = "Mic ready (best in Chrome/Edge).";
       } else {
         micStatusEl.textContent =
-          "Speech recognition not supported in this browser (try Chrome/Edge). You can still type and speak out loud for practice.";
+          "Speech recognition not supported here (iPhone Safari usually). Use 🔊 and repeat out loud, or type.";
         btnSpeak.disabled = true;
       }
     }
@@ -403,8 +545,10 @@
       const correct = simplify(item.fr);
 
       totalCount++;
+      const isCorrect = user === correct;
+      updateItemStats(item, isCorrect);
 
-      if (user === correct) {
+      if (isCorrect) {
         correctCount++;
         feedbackEl.innerHTML =
           `🎧 You said: “${transcript}”<br>✅ That matches: “${item.fr}”`;
@@ -419,12 +563,10 @@
 
     function startSpeaking() {
       if (!recognition) {
-        alert("Speech recognition not available here. Try Chrome/Edge, or use typing.");
+        alert("Speech recognition not available in this browser. Try Chrome/Edge on a computer, or use typing.");
         return;
       }
-      if (!recognizing) {
-        recognition.start();
-      }
+      if (!recognizing) recognition.start();
     }
 
     // ---------- EVENT LISTENERS ----------
@@ -449,6 +591,7 @@
       levelB1.classList.add("active");
       levelB2.classList.remove("active");
       levelB3.classList.remove("active");
+      levelNum.classList.remove("active");
       loadPool();
     });
 
@@ -457,6 +600,7 @@
       levelB2.classList.add("active");
       levelB1.classList.remove("active");
       levelB3.classList.remove("active");
+      levelNum.classList.remove("active");
       loadPool();
     });
 
@@ -465,8 +609,20 @@
       levelB3.classList.add("active");
       levelB1.classList.remove("active");
       levelB2.classList.remove("active");
+      levelNum.classList.remove("active");
       loadPool();
     });
+
+    levelNum.addEventListener("click", () => {
+      currentLevel = "numbers";
+      levelNum.classList.add("active");
+      levelB1.classList.remove("active");
+      levelB2.classList.remove("active");
+      levelB3.classList.remove("active");
+      loadPool();
+    });
+
+    btnHard.addEventListener("click", trainHardStuff);
 
     btnHear.addEventListener("click", speakFrench);
     btnCheck.addEventListener("click", checkTyped);
