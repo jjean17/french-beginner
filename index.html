@@ -1,127 +1,491 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>French Beginner Trainer</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style>
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    background: #f2f2f7;
-    padding: 20px;
-  }
-  h1 { text-align: center; margin-bottom: 10px; }
-  .card {
-    padding: 16px;
-    margin-bottom: 20px;
-    background: white;
-    border-radius: 14px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.07);
-  }
-  .label { font-size: 13px; color: #777; text-transform: uppercase; }
-  .big { font-size: 24px; font-weight: 600; margin: 5px 0; }
-  button {
-    width: 100%;
-    padding: 12px;
-    margin-top: 10px;
-    background: #007aff;
-    border: none;
-    border-radius: 10px;
-    color: white;
-    font-size: 16px;
-  }
-  input {
-    width: 100%;
-    padding: 12px;
-    margin-top: 8px;
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    font-size: 16px;
-  }
-  .feedback { margin-top: 10px; font-size: 16px; }
-</style>
+  <meta charset="UTF-8">
+  <title>French Trainer – Beginner to Phrases</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f2f2f7;
+      padding: 16px;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+    h1 {
+      text-align: center;
+      margin: 8px 0 4px;
+    }
+    .subtitle {
+      text-align: center;
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 14px;
+    }
+    .row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+    .btn-tab, .btn-level {
+      flex: 1;
+      padding: 8px;
+      border-radius: 999px;
+      border: 1px solid #ccc;
+      background: #fff;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .btn-tab.active, .btn-level.active {
+      background: #007aff;
+      border-color: #007aff;
+      color: #fff;
+      font-weight: 600;
+    }
+    .card {
+      padding: 16px;
+      margin-top: 8px;
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+    .label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #777;
+    }
+    .big {
+      font-size: 24px;
+      font-weight: 600;
+      margin: 6px 0;
+    }
+    .small {
+      font-size: 14px;
+      color: #555;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 8px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+    button.action {
+      width: 100%;
+      padding: 11px;
+      margin-top: 8px;
+      border-radius: 10px;
+      border: none;
+      font-size: 15px;
+      cursor: pointer;
+    }
+    .primary {
+      background: #007aff;
+      color: #fff;
+    }
+    .ghost {
+      background: #fff;
+      color: #007aff;
+      border: 1px solid #007aff;
+    }
+    .danger {
+      background: #ff3b30;
+      color: #fff;
+    }
+    .feedback {
+      margin-top: 8px;
+      font-size: 15px;
+      min-height: 20px;
+    }
+    .correct {
+      color: #0a9d45;
+    }
+    .incorrect {
+      color: #ff3b30;
+    }
+    .stats {
+      margin-top: 6px;
+      font-size: 13px;
+      color: #555;
+    }
+    .mic-status {
+      margin-top: 4px;
+      font-size: 12px;
+      color: #666;
+    }
+  </style>
 </head>
-
 <body>
+  <h1>French Trainer</h1>
+  <p class="subtitle">Beginner words, levels, and phrases – practice ~1 hour a day.</p>
 
-<h1>French Beginner</h1>
+  <!-- Mode: Words vs Phrases -->
+  <div class="row">
+    <button id="tab-words" class="btn-tab active" type="button">Words</button>
+    <button id="tab-phrases" class="btn-tab" type="button">Phrases</button>
+  </div>
 
-<div class="card">
-  <div class="label">Translate this:</div>
-  <div class="big" id="english">Loading...</div>
+  <!-- Levels for words -->
+  <div id="level-row" class="row">
+    <button id="level-b1" class="btn-level active" type="button">Beginner 1</button>
+    <button id="level-b2" class="btn-level" type="button">Beginner 2</button>
+    <button id="level-b3" class="btn-level" type="button">Beginner 3</button>
+  </div>
 
-  <input id="input" placeholder="Type the French word…">
-  <button onclick="checkAnswer()">Check</button>
-  <button onclick="speakFrench()">🔊 Hear French</button>
-  <button onclick="nextWord()">Next ➜</button>
+  <div class="card">
+    <div class="label" id="prompt-label">Translate this (EN → FR):</div>
+    <div class="big" id="english-text">Loading…</div>
+    <p class="small" id="hint-text"></p>
 
-  <div class="feedback" id="feedback"></div>
-</div>
+    <input id="text-answer" placeholder="(Optional) Type the French here if you want">
 
-<script>
-const words = [
-  { en: "hello", fr: "bonjour" },
-  { en: "goodbye", fr: "au revoir" },
-  { en: "please", fr: "s'il te plaît" },
-  { en: "thank you", fr: "merci" },
-  { en: "yes", fr: "oui" },
-  { en: "no", fr: "non" },
-  { en: "excuse me", fr: "excusez-moi" },
-  { en: "sorry", fr: "désolé" },
-  { en: "water", fr: "eau" },
-  { en: "food", fr: "nourriture" },
-  { en: "cat", fr: "chat" },
-  { en: "dog", fr: "chien" },
-  { en: "where?", fr: "où?" },
-  { en: "how much?", fr: "combien?" },
-  { en: "good", fr: "bon" },
-  { en: "bad", fr: "mauvais" }
-];
+    <button class="action primary" id="btn-check" type="button">Check (typing)</button>
+    <button class="action ghost" id="btn-hear-fr" type="button">🔊 Hear French</button>
+    <button class="action ghost" id="btn-speak" type="button">🎙 Speak answer</button>
+    <button class="action ghost" id="btn-show" type="button">Show answer</button>
+    <button class="action ghost" id="btn-next" type="button">Next ➜</button>
 
-let index = 0;
+    <div class="feedback" id="feedback"></div>
+    <div class="stats" id="stats"></div>
+    <div class="mic-status" id="mic-status"></div>
+  </div>
 
-function loadWord() {
-  document.getElementById("english").textContent = words[index].en;
-  document.getElementById("feedback").textContent = "";
-  document.getElementById("input").value = "";
-}
+  <script>
+    // ---------- DATA ----------
+    const wordLevels = {
+      beginner1: [
+        { en: "hello", fr: "bonjour" },
+        { en: "goodbye", fr: "au revoir" },
+        { en: "please (informal)", fr: "s'il te plaît" },
+        { en: "please (formal)", fr: "s'il vous plaît" },
+        { en: "thank you", fr: "merci" },
+        { en: "yes", fr: "oui" },
+        { en: "no", fr: "non" },
+        { en: "excuse me", fr: "excusez-moi" },
+        { en: "sorry", fr: "désolé" },
+        { en: "okay / all right", fr: "d'accord" },
+        { en: "good", fr: "bon" },
+        { en: "bad", fr: "mauvais" },
+        { en: "today", fr: "aujourd'hui" },
+        { en: "tomorrow", fr: "demain" },
+        { en: "yesterday", fr: "hier" }
+      ],
+      beginner2: [
+        { en: "water", fr: "l'eau" },
+        { en: "bread", fr: "le pain" },
+        { en: "coffee", fr: "le café" },
+        { en: "tea", fr: "le thé" },
+        { en: "milk", fr: "le lait" },
+        { en: "house", fr: "la maison" },
+        { en: "car", fr: "la voiture" },
+        { en: "street", fr: "la rue" },
+        { en: "friend (m.)", fr: "un ami" },
+        { en: "friend (f.)", fr: "une amie" },
+        { en: "man", fr: "un homme" },
+        { en: "woman", fr: "une femme" },
+        { en: "child", fr: "un enfant" },
+        { en: "school", fr: "l'école" },
+        { en: "work", fr: "le travail" }
+      ],
+      beginner3: [
+        { en: "I am", fr: "je suis" },
+        { en: "you are (informal)", fr: "tu es" },
+        { en: "he is", fr: "il est" },
+        { en: "she is", fr: "elle est" },
+        { en: "we are", fr: "nous sommes" },
+        { en: "I have", fr: "j'ai" },
+        { en: "you have (informal)", fr: "tu as" },
+        { en: "I want", fr: "je veux" },
+        { en: "I would like", fr: "je voudrais" },
+        { en: "I speak", fr: "je parle" },
+        { en: "I don’t know", fr: "je ne sais pas" },
+        { en: "I am tired", fr: "je suis fatigué" },
+        { en: "I am hungry", fr: "j'ai faim" },
+        { en: "I am thirsty", fr: "j'ai soif" },
+        { en: "I understand", fr: "je comprends" }
+      ]
+    };
 
-function speakFrench() {
-  const utter = new SpeechSynthesisUtterance(words[index].fr);
-  utter.lang = "fr-FR";
-  speechSynthesis.speak(utter);
-}
+    const phraseList = [
+      { en: "Where is the bathroom?", fr: "Où sont les toilettes ?" },
+      { en: "I don't understand.", fr: "Je ne comprends pas." },
+      { en: "Do you speak English?", fr: "Parlez-vous anglais ?" },
+      { en: "I would like some water, please.", fr: "Je voudrais de l'eau, s'il vous plaît." },
+      { en: "How much is this?", fr: "C'est combien ?" },
+      { en: "Can you help me?", fr: "Pouvez-vous m'aider ?" },
+      { en: "I am lost.", fr: "Je suis perdu." },
+      { en: "What time is it?", fr: "Il est quelle heure ?" },
+      { en: "Nice to meet you.", fr: "Enchanté." },
+      { en: "Good morning.", fr: "Bonjour." },
+      { en: "Good evening.", fr: "Bonsoir." },
+      { en: "Good night.", fr: "Bonne nuit." },
+      { en: "See you later.", fr: "À plus tard." },
+      { en: "Where is the train station?", fr: "Où est la gare ?" },
+      { en: "I am learning French.", fr: "J'apprends le français." }
+    ];
 
-function simplify(str) {
-  return str.toLowerCase()
-            .normalize("NFD")
-            .replace(/[\u0300-\u036f]/g, "");
-}
+    // ---------- STATE ----------
+    let mode = "words"; // "words" or "phrases"
+    let currentLevel = "beginner1";
+    let pool = [];
+    let index = 0;
+    let correctCount = 0;
+    let totalCount = 0;
 
-function checkAnswer() {
-  const user = simplify(document.getElementById("input").value.trim());
-  const correct = simplify(words[index].fr);
+    // ---------- HELPERS ----------
+    function shuffle(array) {
+      const a = array.slice();
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
 
-  if (!user) {
-    document.getElementById("feedback").textContent = "Type something first 🙂";
-    return;
-  }
+    function simplify(str) {
+      return str.toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/’/g, "'")
+        .trim();
+    }
 
-  if (user === correct) {
-    document.getElementById("feedback").textContent = "✅ Correct!";
-  } else {
-    document.getElementById("feedback").textContent =
-      `❌ Correct answer: “${words[index].fr}”`;
-  }
-}
+    function currentItem() {
+      return pool[index];
+    }
 
-function nextWord() {
-  index = (index + 1) % words.length;
-  loadWord();
-}
+    // ---------- UI ELEMENTS ----------
+    const tabWords = document.getElementById("tab-words");
+    const tabPhrases = document.getElementById("tab-phrases");
+    const levelRow = document.getElementById("level-row");
+    const levelB1 = document.getElementById("level-b1");
+    const levelB2 = document.getElementById("level-b2");
+    const levelB3 = document.getElementById("level-b3");
 
-loadWord();
-</script>
+    const englishText = document.getElementById("english-text");
+    const hintText = document.getElementById("hint-text");
+    const textAnswer = document.getElementById("text-answer");
+    const feedbackEl = document.getElementById("feedback");
+    const statsEl = document.getElementById("stats");
+    const micStatusEl = document.getElementById("mic-status");
+    const promptLabel = document.getElementById("prompt-label");
 
+    const btnCheck = document.getElementById("btn-check");
+    const btnHear = document.getElementById("btn-hear-fr");
+    const btnSpeak = document.getElementById("btn-speak");
+    const btnShow = document.getElementById("btn-show");
+    const btnNext = document.getElementById("btn-next");
+
+    // ---------- LOAD / UPDATE ----------
+    function loadPool() {
+      if (mode === "words") {
+        pool = shuffle(wordLevels[currentLevel]);
+        promptLabel.textContent = "Translate this word (EN → FR):";
+      } else {
+        pool = shuffle(phraseList);
+        promptLabel.textContent = "Say this phrase in French (EN → FR):";
+      }
+      index = 0;
+      correctCount = 0;
+      totalCount = 0;
+      loadItem();
+    }
+
+    function loadItem() {
+      const item = currentItem();
+      englishText.textContent = item.en;
+      hintText.textContent = mode === "words"
+        ? "Speak the French word. Example: “bonjour”"
+        : "Speak the full French phrase. Example: “Où sont les toilettes ?”";
+      textAnswer.value = "";
+      feedbackEl.textContent = "";
+      feedbackEl.className = "feedback";
+      updateStats();
+    }
+
+    function updateStats() {
+      if (totalCount === 0) {
+        statsEl.textContent = "No answers yet. Take your time and repeat each word out loud.";
+      } else {
+        const pct = ((correctCount / totalCount) * 100).toFixed(0);
+        statsEl.textContent = `Correct: ${correctCount}/${totalCount} (${pct}%)`;
+      }
+    }
+
+    // ---------- SPEECH SYNTHESIS ----------
+    function speakFrench() {
+      const item = currentItem();
+      if (!("speechSynthesis" in window)) {
+        alert("Text-to-speech not supported in this browser.");
+        return;
+      }
+      const u = new SpeechSynthesisUtterance(item.fr);
+      u.lang = "fr-FR";
+      speechSynthesis.speak(u);
+    }
+
+    // ---------- TYPED CHECK ----------
+    function checkTyped() {
+      const item = currentItem();
+      const user = simplify(textAnswer.value);
+      const correct = simplify(item.fr);
+
+      if (!user) {
+        feedbackEl.textContent = "Type something first 🙂 (or use the mic if available)";
+        feedbackEl.className = "feedback";
+        return;
+      }
+
+      totalCount++;
+      if (user === correct) {
+        correctCount++;
+        feedbackEl.textContent = `✅ Correct! “${item.fr}”`;
+        feedbackEl.className = "feedback correct";
+      } else {
+        feedbackEl.textContent = `❌ Correct answer: “${item.fr}”`;
+        feedbackEl.className = "feedback incorrect";
+      }
+      updateStats();
+    }
+
+    // ---------- NEXT ----------
+    function nextItem() {
+      index++;
+      if (index >= pool.length) {
+        pool = shuffle(pool); // reshuffle same list
+        index = 0;
+      }
+      loadItem();
+    }
+
+    // ---------- SPEECH RECOGNITION ----------
+    let recognition = null;
+    let recognizing = false;
+
+    function initSpeechRecognition() {
+      if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
+        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SR();
+        recognition.lang = "fr-FR";
+        recognition.continuous = false;
+        recognition.interimResults = false;
+
+        recognition.onstart = () => {
+          recognizing = true;
+          micStatusEl.textContent = "🎙 Listening… say the French now.";
+        };
+        recognition.onend = () => {
+          recognizing = false;
+          micStatusEl.textContent = "Mic idle. Tap “🎙 Speak answer” to try again.";
+        };
+        recognition.onerror = () => {
+          micStatusEl.textContent = "Could not recognize speech. Try again, speak clearly.";
+        };
+        recognition.onresult = (event) => {
+          const transcript = event.results[0][0].transcript;
+          handleSpokenAnswer(transcript);
+        };
+
+        micStatusEl.textContent = "Mic ready. Tap “🎙 Speak answer” and talk.";
+      } else {
+        micStatusEl.textContent =
+          "Speech recognition not supported in this browser (try Chrome/Edge). You can still type and speak out loud for practice.";
+        btnSpeak.disabled = true;
+      }
+    }
+
+    function handleSpokenAnswer(transcript) {
+      const item = currentItem();
+      const user = simplify(transcript);
+      const correct = simplify(item.fr);
+
+      totalCount++;
+
+      if (user === correct) {
+        correctCount++;
+        feedbackEl.innerHTML =
+          `🎧 You said: “${transcript}”<br>✅ That matches: “${item.fr}”`;
+        feedbackEl.className = "feedback correct";
+      } else {
+        feedbackEl.innerHTML =
+          `🎧 You said: “${transcript}”<br>❌ Correct French: “${item.fr}”`;
+        feedbackEl.className = "feedback incorrect";
+      }
+      updateStats();
+    }
+
+    function startSpeaking() {
+      if (!recognition) {
+        alert("Speech recognition not available here. Try Chrome/Edge, or use typing.");
+        return;
+      }
+      if (!recognizing) {
+        recognition.start();
+      }
+    }
+
+    // ---------- EVENT LISTENERS ----------
+    tabWords.addEventListener("click", () => {
+      mode = "words";
+      tabWords.classList.add("active");
+      tabPhrases.classList.remove("active");
+      levelRow.style.display = "flex";
+      loadPool();
+    });
+
+    tabPhrases.addEventListener("click", () => {
+      mode = "phrases";
+      tabPhrases.classList.add("active");
+      tabWords.classList.remove("active");
+      levelRow.style.display = "none";
+      loadPool();
+    });
+
+    levelB1.addEventListener("click", () => {
+      currentLevel = "beginner1";
+      levelB1.classList.add("active");
+      levelB2.classList.remove("active");
+      levelB3.classList.remove("active");
+      loadPool();
+    });
+
+    levelB2.addEventListener("click", () => {
+      currentLevel = "beginner2";
+      levelB2.classList.add("active");
+      levelB1.classList.remove("active");
+      levelB3.classList.remove("active");
+      loadPool();
+    });
+
+    levelB3.addEventListener("click", () => {
+      currentLevel = "beginner3";
+      levelB3.classList.add("active");
+      levelB1.classList.remove("active");
+      levelB2.classList.remove("active");
+      loadPool();
+    });
+
+    btnHear.addEventListener("click", speakFrench);
+    btnCheck.addEventListener("click", checkTyped);
+    btnNext.addEventListener("click", nextItem);
+    btnShow.addEventListener("click", () => {
+      feedbackEl.textContent = `Answer: “${currentItem().fr}”`;
+      feedbackEl.className = "feedback";
+    });
+    btnSpeak.addEventListener("click", startSpeaking);
+
+    textAnswer.addEventListener("keyup", (e) => {
+      if (e.key === "Enter") {
+        checkTyped();
+      }
+    });
+
+    // ---------- INIT ----------
+    loadPool();
+    initSpeechRecognition();
+  </script>
 </body>
 </html>
